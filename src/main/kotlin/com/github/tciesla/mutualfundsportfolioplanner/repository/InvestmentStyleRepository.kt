@@ -7,23 +7,35 @@ import org.springframework.stereotype.Repository
 @Repository
 class InvestmentStyleRepository {
 
-    val investmentStyles = mapOf(
-            "secure" to InvestmentStyle(name = "secure", mutualFundMixture = mapOf(
-                    MutualFund.Type.POLISH to 20.00.toBigDecimal(),
-                    MutualFund.Type.FOREIGN to 75.00.toBigDecimal(),
-                    MutualFund.Type.MONEY to 5.00.toBigDecimal()
-            )),
-            "balanced" to InvestmentStyle(name = "balanced", mutualFundMixture = mapOf(
-                    MutualFund.Type.POLISH to 30.00.toBigDecimal(),
-                    MutualFund.Type.FOREIGN to 60.00.toBigDecimal(),
-                    MutualFund.Type.MONEY to 10.00.toBigDecimal()
-            )),
-            "aggressive" to InvestmentStyle(name = "aggressive", mutualFundMixture = mapOf(
-                    MutualFund.Type.POLISH to 40.00.toBigDecimal(),
-                    MutualFund.Type.FOREIGN to 20.00.toBigDecimal(),
-                    MutualFund.Type.MONEY to 40.00.toBigDecimal()
-            ))
+    enum class Predefined {
+        SECURE, BALANCED, AGGRESSIVE
+    }
+
+    private val investmentStyles = mapOf(
+            Predefined.SECURE.name to InvestmentStyle(
+                    name = Predefined.SECURE.name,
+                    mutualFundMixture = mapOf(
+                            MutualFund.Type.POLISH to 20.toBigDecimal(),
+                            MutualFund.Type.FOREIGN to 75.toBigDecimal(),
+                            MutualFund.Type.MONEY to 5.toBigDecimal()
+                    )),
+            Predefined.BALANCED.name to InvestmentStyle(
+                    name = Predefined.BALANCED.name,
+                    mutualFundMixture = mapOf(
+                            MutualFund.Type.POLISH to 30.toBigDecimal(),
+                            MutualFund.Type.FOREIGN to 60.toBigDecimal(),
+                            MutualFund.Type.MONEY to 10.toBigDecimal()
+                    )),
+            Predefined.AGGRESSIVE.name to InvestmentStyle(
+                    name = Predefined.AGGRESSIVE.name,
+                    mutualFundMixture = mapOf(
+                            MutualFund.Type.POLISH to 40.toBigDecimal(),
+                            MutualFund.Type.FOREIGN to 20.toBigDecimal(),
+                            MutualFund.Type.MONEY to 40.toBigDecimal()
+                    ))
     )
+
+    fun findAll() = investmentStyles.values.toSet()
 
     fun findByName(name: String)  = investmentStyles[name]
 
