@@ -42,14 +42,15 @@ class InvestmentPortfolioServiceTest {
         )
 
         // then
+        println("${portfolio.notInvestedAmount}")
         assertThat(portfolio.notInvestedAmount.compareTo(ZERO)).isEqualTo(0)
 
-        portfolio.items[0].match( expectedInvestedAmount = 1000.00, expectedPortfolioShare =  10.00)
-        portfolio.items[1].match( expectedInvestedAmount = 1000.00, expectedPortfolioShare =  10.00)
-        portfolio.items[2].match( expectedInvestedAmount = 2500.00, expectedPortfolioShare =  25.00)
-        portfolio.items[3].match( expectedInvestedAmount = 2500.00, expectedPortfolioShare =  25.00)
-        portfolio.items[4].match( expectedInvestedAmount = 2500.00, expectedPortfolioShare =  25.00)
-        portfolio.items[5].match( expectedInvestedAmount = 500.00, expectedPortfolioShare =  5.00)
+        portfolio.items[0].match(1000.00, 10.00)
+        portfolio.items[1].match(1000.00, 10.00)
+        portfolio.items[2].match(2500.00, 25.00)
+        portfolio.items[3].match(2500.00, 25.00)
+        portfolio.items[4].match(2500.00, 25.00)
+        portfolio.items[5].match(500.00, 5.00)
     }
 
     @Test
@@ -75,12 +76,12 @@ class InvestmentPortfolioServiceTest {
         println(portfolio.notInvestedAmount)
         assertThat(portfolio.notInvestedAmount.compareTo(ONE)).isEqualTo(0)
 
-        portfolio.items[0].match( expectedInvestedAmount = 1000.00, expectedPortfolioShare =  10.00)
-        portfolio.items[1].match( expectedInvestedAmount = 1000.00, expectedPortfolioShare =  10.00)
-        portfolio.items[2].match( expectedInvestedAmount = 2500.00, expectedPortfolioShare =  25.00)
-        portfolio.items[3].match( expectedInvestedAmount = 2500.00, expectedPortfolioShare =  25.00)
-        portfolio.items[4].match( expectedInvestedAmount = 2500.00, expectedPortfolioShare =  25.00)
-        portfolio.items[5].match( expectedInvestedAmount = 500.00, expectedPortfolioShare =  5.00)
+        portfolio.items[0].match(1000.00, 10.00)
+        portfolio.items[1].match(1000.00, 10.00)
+        portfolio.items[2].match(2500.00, 25.00)
+        portfolio.items[3].match(2500.00, 25.00)
+        portfolio.items[4].match(2500.00, 25.00)
+        portfolio.items[5].match(500.00, 5.00)
     }
 
     @Test
@@ -105,12 +106,12 @@ class InvestmentPortfolioServiceTest {
         // then
         assertThat(portfolio.notInvestedAmount.compareTo(ZERO)).isEqualTo(0)
 
-        portfolio.items[0].match( expectedInvestedAmount = 668.00, expectedPortfolioShare =  6.68)
-        portfolio.items[1].match( expectedInvestedAmount = 666.00, expectedPortfolioShare =  6.66)
-        portfolio.items[2].match( expectedInvestedAmount = 666.00, expectedPortfolioShare =  6.66)
-        portfolio.items[3].match( expectedInvestedAmount = 3750.00, expectedPortfolioShare =  37.50)
-        portfolio.items[4].match( expectedInvestedAmount = 3750.00, expectedPortfolioShare =  37.50)
-        portfolio.items[5].match( expectedInvestedAmount = 500.00, expectedPortfolioShare =  5.00)
+        portfolio.items[0].match(668.00, 6.68)
+        portfolio.items[1].match(666.00, 6.66)
+        portfolio.items[2].match(666.00, 6.66)
+        portfolio.items[3].match(3750.00, 37.50)
+        portfolio.items[4].match(3750.00, 37.50)
+        portfolio.items[5].match(500.00, 5.00)
     }
 
     private fun InvestmentPortfolio.Item.match(
