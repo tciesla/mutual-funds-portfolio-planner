@@ -24,11 +24,14 @@ class InvestmentPortfolioService(val investmentStyleRepository: InvestmentStyleR
                 selectedMutualFunds, availableCapital, investmentStyle)
 
         val investedCapital: Long = investedCapitalPerMutualFundType.values.sum()
+                .also { println("investedCapital: $it") }
 
-        val remainingCapital: Long = availableCapital - investedCapital
+        val remainingCapital: Long = (availableCapital - investedCapital)
+                .also { println("remainingCapital: $it") }
 
         val portfolioItems: List<InvestmentPortfolio.Item> = createPortfolioItems(
                 selectedMutualFunds, investedCapital, investedCapitalPerMutualFundType)
+                .also { println("portfolioItems: $it") }
 
         return InvestmentPortfolio(
                 investedCapital.toBigDecimal(),
@@ -73,28 +76,30 @@ class InvestmentPortfolioService(val investmentStyleRepository: InvestmentStyleR
         return latestMatchedMutualFundTypeBuckets
     }
 
-    private fun createPortfolioItems(selectedMutualFunds: List<MutualFund>, investedAmount: Long, mutualFundTypeBuckets: Map<MutualFund.Type, Long>): List<InvestmentPortfolio.Item> {
-        val mapX = selectedMutualFunds.map {
-            val mutualFundType = it.type
-            it to mutualFundTypeBuckets[mutualFundType]!! / selectedMutualFunds.filter { it.type == mutualFundType }.count()
+    private fun createPortfolioItems(
+            mutualFunds: List<MutualFund>,
+            investedCapital: Long,
+            mutualFundTypeBuckets: Map<MutualFund.Type, Long>
+    ): List<InvestmentPortfolio.Item> {
+
+        val splitCapitalPerMutualFund: MutableMap<MutualFund, Long> = mutualFunds.map { mutualFund ->
+            mutualFund to mutualFundTypeBuckets[mutualFund.type]!! / mutualFunds.count { it.type == mutualFund.type }
         }.toMap().toMutableMap()
 
-        mutualFundTypeBuckets
-                .map {
-                    val type = it.key
-                    val toBigDecimal = mapX.filter { it.key.type == type }.values.sum()
-                    it.key to it.value - toBigDecimal
-                }.filter { it.second > 0L }
-                .forEach {
-                    val type = it.first
-                    val first = mapX.filter { it.key.type == type }.entries.first()
-                    mapX[first.key] = mapX[first.key]!! + it.second
-                }
 
-        val portfolioItems = mapX.map {
-            InvestmentPortfolio.Item(it.key, it.value.toBigDecimal(), ((it.value.toBigDecimal().divide(investedAmount.toBigDecimal())) * 100.00.toBigDecimal()))
+        mutualFundTypeBuckets.map { (mutualFundType, capitalInBucket) ->
+            mutualFundType to capitalInBucket - splitCapitalPerMutualFund.filterKeys { it.type == mutualFundType }.values.sum()
+        }.forEach { (mutualFundType, remainingCapital) ->
+            val firstMutualFundWithType = splitCapitalPerMutualFund.filterKeys { it.type == mutualFundType }.entries.first()
+            splitCapitalPerMutualFund[firstMutualFundWithType.key] = firstMutualFundWithType.value + remainingCapital
         }
-        return portfolioItems
+
+        return splitCapitalPerMutualFund.map { InvestmentPortfolio.Item(
+                mutualFund = it.key,
+                investedAmount = it.value.toBigDecimal(),
+                portfolioShare = (it.value.toBigDecimal().divide(investedCapital.toBigDecimal()) * 100.00.toBigDecimal()))
+        }
+
     }
 
 }
