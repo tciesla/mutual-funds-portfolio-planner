@@ -15,9 +15,9 @@ class InvestmentStyleRepositoryTest {
 
         // then
         assertThat(investmentStyle).isNotNull
-        assertThat(investmentStyle!!.mutualFundMixture[MutualFund.Type.POLISH]).isEqualTo(20.00)
-        assertThat(investmentStyle.mutualFundMixture[MutualFund.Type.FOREIGN]).isEqualTo(75.00)
-        assertThat(investmentStyle.mutualFundMixture[MutualFund.Type.MONEY]).isEqualTo(5.00)
+        assertThat(investmentStyle!!.mutualFundMixture[MutualFund.Type.POLISH]).isEqualTo(20.00.toBigDecimal())
+        assertThat(investmentStyle.mutualFundMixture[MutualFund.Type.FOREIGN]).isEqualTo(75.00.toBigDecimal())
+        assertThat(investmentStyle.mutualFundMixture[MutualFund.Type.MONEY]).isEqualTo(5.00.toBigDecimal())
     }
 
     @Test
@@ -27,9 +27,9 @@ class InvestmentStyleRepositoryTest {
 
         // then
         assertThat(investmentStyle).isNotNull
-        assertThat(investmentStyle!!.mutualFundMixture[MutualFund.Type.POLISH]).isEqualTo(30.00)
-        assertThat(investmentStyle.mutualFundMixture[MutualFund.Type.FOREIGN]).isEqualTo(60.00)
-        assertThat(investmentStyle.mutualFundMixture[MutualFund.Type.MONEY]).isEqualTo(10.00)
+        assertThat(investmentStyle!!.mutualFundMixture[MutualFund.Type.POLISH]).isEqualTo(30.00.toBigDecimal())
+        assertThat(investmentStyle.mutualFundMixture[MutualFund.Type.FOREIGN]).isEqualTo(60.00.toBigDecimal())
+        assertThat(investmentStyle.mutualFundMixture[MutualFund.Type.MONEY]).isEqualTo(10.00.toBigDecimal())
     }
 
     @Test
@@ -39,9 +39,9 @@ class InvestmentStyleRepositoryTest {
 
         // then
         assertThat(investmentStyle).isNotNull
-        assertThat(investmentStyle!!.mutualFundMixture[MutualFund.Type.POLISH]).isEqualTo(40.00)
-        assertThat(investmentStyle.mutualFundMixture[MutualFund.Type.FOREIGN]).isEqualTo(20.00)
-        assertThat(investmentStyle.mutualFundMixture[MutualFund.Type.MONEY]).isEqualTo(40.00)
+        assertThat(investmentStyle!!.mutualFundMixture[MutualFund.Type.POLISH]).isEqualTo(40.00.toBigDecimal())
+        assertThat(investmentStyle.mutualFundMixture[MutualFund.Type.FOREIGN]).isEqualTo(20.00.toBigDecimal())
+        assertThat(investmentStyle.mutualFundMixture[MutualFund.Type.MONEY]).isEqualTo(40.00.toBigDecimal())
     }
 
 }

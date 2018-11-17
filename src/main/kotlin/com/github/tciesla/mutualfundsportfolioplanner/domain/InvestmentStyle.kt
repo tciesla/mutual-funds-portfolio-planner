@@ -1,17 +1,30 @@
 package com.github.tciesla.mutualfundsportfolioplanner.domain
 
-class InvestmentStyle(val name: String, mutualFundMixture: Map<MutualFund.Type, Double>) {
+import java.math.BigDecimal
+
+class InvestmentStyle(val name: String, mutualFundMixture: Map<MutualFund.Type, BigDecimal>) {
 
     val mutualFundMixture = validatedMutualFundMixture(mutualFundMixture)
 
-    private fun validatedMutualFundMixture(mutualFundMixture: Map<MutualFund.Type, Double>)
-            : Map<MutualFund.Type, Double> {
+    companion object {
+        val HUNDRED = 100.toBigDecimal()
+    }
 
-        if (mutualFundMixture.values.sum() != 100.00) {
+    private fun validatedMutualFundMixture(mutualFundMixture: Map<MutualFund.Type, BigDecimal>)
+            : Map<MutualFund.Type, BigDecimal> {
+
+        if (mutualFundMixture.isEmpty()) {
+            throw IllegalArgumentException("mutual fund mixture is empty")
+        }
+
+        val overallPercentages = mutualFundMixture.values
+                .reduce { acc, number -> acc.plus(number) }
+
+        if (overallPercentages < HUNDRED || overallPercentages > HUNDRED) {
             throw IllegalArgumentException("mutual fund mixture must sum up to 100%")
         }
 
-        if (mutualFundMixture.values.any { it <= 0  }) {
+        if (mutualFundMixture.values.any { it <= BigDecimal.ZERO  }) {
             throw IllegalArgumentException("mutual fund mixture could have values only above 0.00%")
         }
 

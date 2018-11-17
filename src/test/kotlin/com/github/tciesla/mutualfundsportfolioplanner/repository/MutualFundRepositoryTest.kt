@@ -6,7 +6,7 @@ import org.junit.Test
 
 class MutualFundRepositoryTest {
 
-    private val mutualFundRepository: MutualFundRepository = MutualFundRepository()
+    private val mutualFundRepository = MutualFundRepository()
 
     @Test
     fun `should return six mutual funds`() {

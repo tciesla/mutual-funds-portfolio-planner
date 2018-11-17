@@ -2,6 +2,7 @@ package com.github.tciesla.mutualfundsportfolioplanner.domain
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.math.BigDecimal
 
 class InvestmentStyleTest {
 
@@ -9,9 +10,9 @@ class InvestmentStyleTest {
     fun `should create investment style with example mixture`() {
         // given
         val secureMutualFundMixture = mapOf(
-                MutualFund.Type.POLISH to 20.00,
-                MutualFund.Type.FOREIGN to 75.00,
-                MutualFund.Type.MONEY to 5.00)
+                MutualFund.Type.POLISH to 20.toBigDecimal(),
+                MutualFund.Type.FOREIGN to 75.toBigDecimal(),
+                MutualFund.Type.MONEY to 5.toBigDecimal())
 
         // when
         val investmentStyle = InvestmentStyle(name = "secure", mutualFundMixture = secureMutualFundMixture)
@@ -31,8 +32,8 @@ class InvestmentStyleTest {
     fun `should throw exception when mutual fund mixture sum up to 95%`() {
         // when
         InvestmentStyle(name = "impossible", mutualFundMixture = mapOf(
-                MutualFund.Type.POLISH to 50.00,
-                MutualFund.Type.FOREIGN to 45.00
+                MutualFund.Type.POLISH to 50.toBigDecimal(),
+                MutualFund.Type.FOREIGN to 45.toBigDecimal()
         ))
     }
 
@@ -40,9 +41,9 @@ class InvestmentStyleTest {
     fun `should throw exception when mutual fund mixture contains negative number`() {
         // when
         InvestmentStyle(name = "impossible", mutualFundMixture = mapOf(
-                MutualFund.Type.POLISH to -50.00,
-                MutualFund.Type.FOREIGN to 50.00,
-                MutualFund.Type.MONEY to 100.00
+                MutualFund.Type.POLISH to (-50).toBigDecimal(),
+                MutualFund.Type.FOREIGN to 50.toBigDecimal(),
+                MutualFund.Type.MONEY to 100.toBigDecimal()
         ))
     }
 
@@ -50,9 +51,9 @@ class InvestmentStyleTest {
     fun `should throw exception when mutual fund mixture contains zero number`() {
         // when
         InvestmentStyle(name = "impossible", mutualFundMixture = mapOf(
-                MutualFund.Type.POLISH to 50.00,
-                MutualFund.Type.FOREIGN to 0.00,
-                MutualFund.Type.MONEY to 50.00
+                MutualFund.Type.POLISH to 50.toBigDecimal(),
+                MutualFund.Type.FOREIGN to BigDecimal.ZERO,
+                MutualFund.Type.MONEY to 50.toBigDecimal()
         ))
     }
 
@@ -60,8 +61,8 @@ class InvestmentStyleTest {
     fun `should create investment style when mutual fund mixture sum up to 100%`() {
         // when
         InvestmentStyle(name = "international", mutualFundMixture = mapOf(
-                MutualFund.Type.FOREIGN to 95.50,
-                MutualFund.Type.MONEY to 4.50
+                MutualFund.Type.FOREIGN to 95.50.toBigDecimal(),
+                MutualFund.Type.MONEY to 4.50.toBigDecimal()
         ))
     }
 
