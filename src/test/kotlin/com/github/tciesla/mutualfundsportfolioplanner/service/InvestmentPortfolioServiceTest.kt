@@ -38,7 +38,7 @@ class InvestmentPortfolioServiceTest {
         val portfolio = investmentPortfolioService.createPortfolio(
                 selectedMutualFunds = selectedMutualFunds,
                 investmentStyleName = SECURE.name,
-                investmentAmount = 10_000.00.toBigDecimal()
+                availableCapital = 10_000
         )
 
         // then
@@ -69,7 +69,7 @@ class InvestmentPortfolioServiceTest {
         val portfolio = investmentPortfolioService.createPortfolio(
                 selectedMutualFunds = selectedMutualFunds,
                 investmentStyleName = SECURE.name,
-                investmentAmount = 10_001.00.toBigDecimal()
+                availableCapital = 10_001
         )
 
         // then
@@ -100,7 +100,7 @@ class InvestmentPortfolioServiceTest {
         val portfolio = investmentPortfolioService.createPortfolio(
                 selectedMutualFunds = selectedMutualFunds,
                 investmentStyleName = SECURE.name,
-                investmentAmount = 10_000.00.toBigDecimal()
+                availableCapital = 10_000
         )
 
         // then

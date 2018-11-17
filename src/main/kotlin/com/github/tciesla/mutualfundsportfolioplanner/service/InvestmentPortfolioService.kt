@@ -1,10 +1,10 @@
 package com.github.tciesla.mutualfundsportfolioplanner.service
 
 import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentPortfolio
+import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentStyle
 import com.github.tciesla.mutualfundsportfolioplanner.domain.MutualFund
 import com.github.tciesla.mutualfundsportfolioplanner.repository.InvestmentStyleRepository
 import org.springframework.stereotype.Service
-import java.math.BigDecimal
 
 @Service
 class InvestmentPortfolioService(val investmentStyleRepository: InvestmentStyleRepository) {
@@ -12,101 +12,90 @@ class InvestmentPortfolioService(val investmentStyleRepository: InvestmentStyleR
     fun createPortfolio(
             selectedMutualFunds: List<MutualFund>,
             investmentStyleName: String,
-            investmentAmount: BigDecimal
+            availableCapital: Long
     ) : InvestmentPortfolio {
 
         val investmentStyle = investmentStyleRepository.findByName(investmentStyleName)
             ?: throw IllegalArgumentException("investment style with name $investmentStyleName not found")
 
-        val bucketsAmount = investmentStyle.mutualFundMixture.size
-        var bucketTypes = investmentStyle.mutualFundMixture.map { it.key }.toTypedArray()
-        var targetBucketShares = investmentStyle.mutualFundMixture.map { it.value.toDouble() }.toDoubleArray()
-        var lastSuccessBucketsMatch = investmentStyle.mutualFundMixture.map { 0L }.toLongArray()
-        var currentBucketsInvestment = lastSuccessBucketsMatch.copyOf()
+        val investedCapitalPerMutualFundType: Map<MutualFund.Type, Long> = splitAvailableCapitalByMutualFundType(
+                selectedMutualFunds, availableCapital, investmentStyle)
 
-        for (i in 1L..(investmentAmount.toLong() + 1L)) {
+        val investedCapital: Long = investedCapitalPerMutualFundType.values.sum()
 
-            // calculate shares array
-            val shares = arrayOfNulls<Double>(bucketsAmount)
-            for (bucket in 0..(bucketsAmount - 1)) {
-                shares[bucket] = (currentBucketsInvestment[bucket] / (if ( i - 1L == 0L) 1 else i - 1).toDouble()) * 100.0
-            }
+        val remainingCapital: Long = availableCapital - investedCapital
+
+        val portfolioItems: List<InvestmentPortfolio.Item> = createPortfolioItems(
+                selectedMutualFunds, investedCapital, investedCapitalPerMutualFundType)
+
+        return InvestmentPortfolio(
+                investedCapital.toBigDecimal(),
+                remainingCapital.toBigDecimal(),
+                investmentStyle,
+                portfolioItems)
+    }
+
+    private fun splitAvailableCapitalByMutualFundType(
+            mutualFunds: List<MutualFund>,
+            availableCapital: Long,
+            investmentStyle: InvestmentStyle
+    ): Map<MutualFund.Type, Long> {
+
+        var latestMatchedMutualFundTypeBuckets: Map<MutualFund.Type, Long> = mutualFunds.map { it.type to 0L }.toMap()
+
+        val currentMutualFundTypeBuckets: MutableMap<MutualFund.Type, Long> = latestMatchedMutualFundTypeBuckets.toMutableMap()
+
+        for (capital in 1L..(availableCapital + 1L)) {
+
+            // calculates current portfolio shares
+            val shares2 = mutualFunds
+                    .map { it.type to currentMutualFundTypeBuckets[it.type]!!.toDouble() / ((if (capital - 1L == 0L) 1 else capital - 1).toDouble()) * 100.0 }
+                    .toMap()
 
             // check whether bucket shares matches model
-            var matches = true
-            for (bucket in 0..(bucketsAmount - 1)) {
-                if (targetBucketShares[bucket].toBigDecimal().compareTo(shares[bucket]!!.toBigDecimal()) != 0) {
-                    matches = false
-                    break
-                }
+            if (shares2.all { it.value.toBigDecimal().compareTo(investmentStyle.mutualFundMixture[it.key]) == 0 }) {
+                latestMatchedMutualFundTypeBuckets = currentMutualFundTypeBuckets.toMutableMap()
             }
 
-            if (matches) {
-                println("match: $i, ${currentBucketsInvestment.toList()}")
-                for (bucket in 0..(bucketsAmount - 1)) {
-                    lastSuccessBucketsMatch[bucket] = currentBucketsInvestment[bucket]
-                }
-            }
             // save last success if matched
 
             // calculate distances array
-            val distances = arrayOfNulls<Double>(bucketsAmount)
-            for (bucket in 0..(bucketsAmount - 1)) {
-                distances[bucket] = targetBucketShares[bucket] - shares[bucket]!!
-            }
+            var distances2 = mutualFunds
+                    .map { it.type to investmentStyle.mutualFundMixture[it.type]!!.toDouble() - shares2[it.type]!! }
+                    .toMap()
 
             // find highest distance to target
-            var maxDistanceBucket = 0
-            var maxDistance = distances[0]
-            for (bucket in 0..(bucketsAmount - 1)) {
-                if (distances[bucket]!! > maxDistance!!) {
-                    maxDistance = distances[bucket]
-                    maxDistanceBucket = bucket
-                }
-            }
-
             // increase given bucket
-            if (i.toBigDecimal() <= investmentAmount) currentBucketsInvestment[maxDistanceBucket]++
-        }
-
-        val investedAmount = lastSuccessBucketsMatch.sum().toBigDecimal()
-        val notInvestedAmount = investmentAmount - investedAmount
-
-        var items = listOf<InvestmentPortfolio.Item>()
-
-        val result : Map<MutualFund, Long>  = selectedMutualFunds.map {
-            it to 0L
-        }.toMap()
-
-        var list = mutableListOf<InvestmentPortfolio.Item>()
-
-        for (bucket in 0..(bucketsAmount - 1)) {
-            val mutualF = selectedMutualFunds
-                    .filter { it.type == bucketTypes[bucket] }
-
-            val mutualFundsInvestments = mutualF
-                    .map { lastSuccessBucketsMatch[bucket] / mutualF.size }
-                    .toLongArray()
-
-            val remaining = lastSuccessBucketsMatch[bucket] - mutualFundsInvestments.sum()
-            mutualFundsInvestments[0] += remaining
-
-            for (x in 0..(mutualF.size-1)) {
-                list.add(InvestmentPortfolio.Item(mutualF[x],
-                        mutualFundsInvestments[x].toBigDecimal(),
-                        mutualFundsInvestments[x].toBigDecimal().multiply(100.toBigDecimal()).divide(investedAmount)))
+            if (capital <= availableCapital) {
+                val bigDecimal = currentMutualFundTypeBuckets[distances2.maxBy { it.value }!!.key]
+                currentMutualFundTypeBuckets[distances2.maxBy { it.value }!!.key] = bigDecimal!! + 1
             }
-
-
         }
+        return latestMatchedMutualFundTypeBuckets
+    }
 
-        println("${lastSuccessBucketsMatch.toList()}")
+    private fun createPortfolioItems(selectedMutualFunds: List<MutualFund>, investedAmount: Long, mutualFundTypeBuckets: Map<MutualFund.Type, Long>): List<InvestmentPortfolio.Item> {
+        val mapX = selectedMutualFunds.map {
+            val mutualFundType = it.type
+            it to mutualFundTypeBuckets[mutualFundType]!! / selectedMutualFunds.filter { it.type == mutualFundType }.count()
+        }.toMap().toMutableMap()
 
-        return InvestmentPortfolio(
-                investedAmount,
-                notInvestedAmount,
-                investmentStyle,
-                list)
+        mutualFundTypeBuckets
+                .map {
+                    val type = it.key
+                    val toBigDecimal = mapX.filter { it.key.type == type }.values.sum()
+                    it.key to it.value - toBigDecimal
+                }.filter { it.second > 0L }
+                .forEach {
+                    val type = it.first
+                    val first = mapX.filter { it.key.type == type }.entries.first()
+                    mapX[first.key] = mapX[first.key]!! + it.second
+                }
+
+        val portfolioItems = mapX.map {
+            InvestmentPortfolio.Item(it.key, it.value.toBigDecimal(), ((it.value.toBigDecimal().divide(investedAmount.toBigDecimal())) * 100.00.toBigDecimal()))
+        }
+        return portfolioItems
     }
 
 }
