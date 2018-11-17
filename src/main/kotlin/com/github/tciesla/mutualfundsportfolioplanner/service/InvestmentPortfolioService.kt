@@ -6,6 +6,7 @@ import com.github.tciesla.mutualfundsportfolioplanner.domain.MutualFund
 import com.github.tciesla.mutualfundsportfolioplanner.repository.InvestmentStyleRepository
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.math.RoundingMode
 import kotlin.math.max
 
 @Service
@@ -33,11 +34,7 @@ class InvestmentPortfolioService(val investmentStyleRepository: InvestmentStyleR
                 selectedMutualFunds, investedCapital, investedCapitalPerMutualFundType)
                 .also { println("portfolioItems: $it") }
 
-        return InvestmentPortfolio(
-                investedCapital.toBigDecimal(),
-                remainingCapital.toBigDecimal(),
-                investmentStyle,
-                portfolioItems)
+        return InvestmentPortfolio(remainingCapital, portfolioItems)
     }
 
     private fun splitAvailableCapitalByMutualFundType(
@@ -94,12 +91,14 @@ class InvestmentPortfolioService(val investmentStyleRepository: InvestmentStyleR
             splitCapitalPerMutualFund[firstMutualFundWithType.key] = firstMutualFundWithType.value + remainingCapital
         }
 
-        return splitCapitalPerMutualFund.map { InvestmentPortfolio.Item(
-                mutualFund = it.key,
-                investedAmount = it.value.toBigDecimal(),
-                portfolioShare = (it.value.toBigDecimal().divide(investedCapital.toBigDecimal()) * 100.00.toBigDecimal()))
+        return splitCapitalPerMutualFund.map { (mutualFund, capitalInvestedInMutualFund) -> InvestmentPortfolio.Item(
+                mutualFund = mutualFund,
+                investedCapital = capitalInvestedInMutualFund,
+                portfolioShare = ((capitalInvestedInMutualFund.toDouble() / investedCapital.toDouble()) * 100.0).round())
         }
 
     }
+
+    private fun Double.round(): Double = this.toBigDecimal().setScale(5, RoundingMode.HALF_EVEN).toDouble()
 
 }

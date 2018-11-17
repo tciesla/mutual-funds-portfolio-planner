@@ -12,8 +12,6 @@ import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit4.SpringRunner
-import java.math.BigDecimal.ONE
-import java.math.BigDecimal.ZERO
 
 @SpringBootTest
 @RunWith(SpringRunner::class)
@@ -42,8 +40,7 @@ class InvestmentPortfolioServiceTest {
         )
 
         // then
-        println("${portfolio.notInvestedAmount}")
-        assertThat(portfolio.notInvestedAmount.compareTo(ZERO)).isEqualTo(0)
+        assertThat(portfolio.remainingCapital).isEqualTo(0L)
 
         portfolio.items[0].match(1000.00, 10.00)
         portfolio.items[1].match(1000.00, 10.00)
@@ -73,8 +70,8 @@ class InvestmentPortfolioServiceTest {
         )
 
         // then
-        println(portfolio.notInvestedAmount)
-        assertThat(portfolio.notInvestedAmount.compareTo(ONE)).isEqualTo(0)
+        println(portfolio.remainingCapital)
+        assertThat(portfolio.remainingCapital).isEqualTo(1L)
 
         portfolio.items[0].match(1000.00, 10.00)
         portfolio.items[1].match(1000.00, 10.00)
@@ -104,7 +101,7 @@ class InvestmentPortfolioServiceTest {
         )
 
         // then
-        assertThat(portfolio.notInvestedAmount.compareTo(ZERO)).isEqualTo(0)
+        assertThat(portfolio.remainingCapital).isEqualTo(0L)
 
         portfolio.items[0].match(668.00, 6.68)
         portfolio.items[1].match(666.00, 6.66)
@@ -118,8 +115,8 @@ class InvestmentPortfolioServiceTest {
             expectedInvestedAmount: Double,
             expectedPortfolioShare: Double) {
 
-        assertThat(this.investedAmount.compareTo(expectedInvestedAmount.toBigDecimal())).isEqualTo(0)
-        assertThat(this.portfolioShare.compareTo(expectedPortfolioShare.toBigDecimal())).isEqualTo(0)
+        assertThat(this.investedCapital.compareTo(expectedInvestedAmount)).isEqualTo(0)
+        assertThat(this.portfolioShare.compareTo(expectedPortfolioShare)).isEqualTo(0)
     }
 
 }
