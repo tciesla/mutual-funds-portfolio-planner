@@ -5,6 +5,8 @@ import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentStyle
 import com.github.tciesla.mutualfundsportfolioplanner.domain.MutualFund
 import com.github.tciesla.mutualfundsportfolioplanner.repository.InvestmentStyleRepository
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
+import kotlin.math.max
 
 @Service
 class InvestmentPortfolioService(val investmentStyleRepository: InvestmentStyleRepository) {
@@ -43,34 +45,31 @@ class InvestmentPortfolioService(val investmentStyleRepository: InvestmentStyleR
 
         var latestMatchedMutualFundTypeBuckets: Map<MutualFund.Type, Long> = mutualFunds.map { it.type to 0L }.toMap()
 
-        val currentMutualFundTypeBuckets: MutableMap<MutualFund.Type, Long> = latestMatchedMutualFundTypeBuckets.toMutableMap()
+        val targetMutualFundTypeBucketsShares: Map<MutualFund.Type, BigDecimal> = investmentStyle.mutualFundMixture
 
-        for (capital in 1L..(availableCapital + 1L)) {
+        val mutualFundTypeBuckets: MutableMap<MutualFund.Type, Long> = latestMatchedMutualFundTypeBuckets.toMutableMap()
 
-            // calculates current portfolio shares
-            val shares2 = mutualFunds
-                    .map { it.type to currentMutualFundTypeBuckets[it.type]!!.toDouble() / ((if (capital - 1L == 0L) 1 else capital - 1).toDouble()) * 100.0 }
+        for (capital in 0L..availableCapital) {
+
+            val spentCapital: Double = max(mutualFundTypeBuckets.values.sum().toDouble(), 1.0)
+
+            val bucketsSharesInPortfolio: Map<MutualFund.Type, Double> = mutualFunds
+                    .map { it.type to (mutualFundTypeBuckets[it.type]!!.toDouble() / spentCapital) * 100.0 }
                     .toMap()
 
-            // check whether bucket shares matches model
-            if (shares2.all { it.value.toBigDecimal().compareTo(investmentStyle.mutualFundMixture[it.key]) == 0 }) {
-                latestMatchedMutualFundTypeBuckets = currentMutualFundTypeBuckets.toMutableMap()
+            if (bucketsSharesInPortfolio.all { it.value.toBigDecimal().compareTo(targetMutualFundTypeBucketsShares[it.key]) == 0 }) {
+                latestMatchedMutualFundTypeBuckets = mutualFundTypeBuckets.also { println("matched: $it") }.toMap()
             }
 
-            // save last success if matched
-
-            // calculate distances array
-            var distances2 = mutualFunds
-                    .map { it.type to investmentStyle.mutualFundMixture[it.type]!!.toDouble() - shares2[it.type]!! }
+            val bucketsSharesDistancesToTargetShares: Map<MutualFund.Type, Double> = mutualFunds
+                    .map { it.type to targetMutualFundTypeBucketsShares[it.type]!!.toDouble() - bucketsSharesInPortfolio[it.type]!! }
                     .toMap()
 
-            // find highest distance to target
-            // increase given bucket
-            if (capital <= availableCapital) {
-                val bigDecimal = currentMutualFundTypeBuckets[distances2.maxBy { it.value }!!.key]
-                currentMutualFundTypeBuckets[distances2.maxBy { it.value }!!.key] = bigDecimal!! + 1
-            }
+            val farthestMutualFundTypeFromTargetShare: MutualFund.Type = bucketsSharesDistancesToTargetShares.maxBy { it.value }!!.key
+            val capitalInFarthestMutualFundTypeBucket = mutualFundTypeBuckets[farthestMutualFundTypeFromTargetShare]!!
+            mutualFundTypeBuckets[farthestMutualFundTypeFromTargetShare] = capitalInFarthestMutualFundTypeBucket + 1
         }
+
         return latestMatchedMutualFundTypeBuckets
     }
 
