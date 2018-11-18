@@ -64,7 +64,7 @@ class InvestmentPortfolioService {
                     .toMap()
 
             if (mutualFundTypeBucketsMixture.all { bucketMixtureMatchesTargetMixture(it, investmentStyleMixture) }) {
-                latestBucketsMatchedToInvestmentStyleMixture = mutualFundTypeBuckets.also { println("matched: $it") }.toMap()
+                latestBucketsMatchedToInvestmentStyleMixture = mutualFundTypeBuckets.toMap()
             }
 
             val bucketsMixtureDistancesToTargetMixture: Map<MutualFund.Type, Double> = mutualFunds
