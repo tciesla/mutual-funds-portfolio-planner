@@ -1,7 +1,9 @@
 package com.github.tciesla.mutualfundsportfolioplanner.service
 
 import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentPortfolio
-import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentStyle
+import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentStyle.AGGRESSIVE
+import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentStyle.BALANCED
+import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentStyle.SECURE
 import com.github.tciesla.mutualfundsportfolioplanner.domain.MutualFund
 import com.github.tciesla.mutualfundsportfolioplanner.domain.MutualFund.Type.FOREIGN
 import com.github.tciesla.mutualfundsportfolioplanner.domain.MutualFund.Type.MONEY
@@ -17,19 +19,19 @@ class InvestmentPortfolioServiceTest {
     fun `should pass task example #0`() {
         // given
         val selectedMutualFunds = listOf(
-                MutualFund(1L, "Fundusz Polski 1", POLISH),
-                MutualFund(2L, "Fundusz Polski 2", POLISH),
-                MutualFund(3L, "Fundusz Zagraniczny 1", FOREIGN),
-                MutualFund(4L, "Fundusz Zagraniczny 2", FOREIGN),
-                MutualFund(5L, "Fundusz Zagraniczny 3", FOREIGN),
-                MutualFund(6L, "Fundusz Pieniężny 1", MONEY)
+                polishMutualFund1,
+                polishMutualFund2,
+                foreignMutualFund1,
+                foreignMutualFund2,
+                foreignMutualFund3,
+                moneyMutualFund1
         )
 
         // when
         val portfolio = investmentPortfolioService.createPortfolio(
                 selectedMutualFunds = selectedMutualFunds,
-                investmentStyle = InvestmentStyle.SECURE,
-                availableCapital = 10_000
+                investmentStyle = SECURE,
+                availableCapital = 10_000L
         )
 
         // then
@@ -47,19 +49,19 @@ class InvestmentPortfolioServiceTest {
     fun `should pass task example #1`() {
         // given
         val selectedMutualFunds = listOf(
-                MutualFund(1L, "Fundusz Polski 1", POLISH),
-                MutualFund(2L, "Fundusz Polski 2", POLISH),
-                MutualFund(3L, "Fundusz Zagraniczny 1", FOREIGN),
-                MutualFund(4L, "Fundusz Zagraniczny 2", FOREIGN),
-                MutualFund(5L, "Fundusz Zagraniczny 3", FOREIGN),
-                MutualFund(6L, "Fundusz Pieniężny 1", MONEY)
+                polishMutualFund1,
+                polishMutualFund2,
+                foreignMutualFund1,
+                foreignMutualFund2,
+                foreignMutualFund3,
+                moneyMutualFund1
         )
 
         // when
         val portfolio = investmentPortfolioService.createPortfolio(
                 selectedMutualFunds = selectedMutualFunds,
-                investmentStyle = InvestmentStyle.SECURE,
-                availableCapital = 10_001
+                investmentStyle = SECURE,
+                availableCapital = 10_001L
         )
 
         // then
@@ -77,19 +79,19 @@ class InvestmentPortfolioServiceTest {
     fun `should pass task example #2`() {
         // given
         val selectedMutualFunds = listOf(
-                MutualFund(1L, "Fundusz Polski 1", POLISH),
-                MutualFund(2L, "Fundusz Polski 2", POLISH),
-                MutualFund(3L, "Fundusz Polski 3", POLISH),
-                MutualFund(4L, "Fundusz Zagraniczny 1", FOREIGN),
-                MutualFund(5L, "Fundusz Zagraniczny 2", FOREIGN),
-                MutualFund(6L, "Fundusz Pieniężny 1", MONEY)
+                polishMutualFund1,
+                polishMutualFund2,
+                polishMutualFund3,
+                foreignMutualFund1,
+                foreignMutualFund2,
+                moneyMutualFund1
         )
 
         // when
         val portfolio = investmentPortfolioService.createPortfolio(
                 selectedMutualFunds = selectedMutualFunds,
-                investmentStyle = InvestmentStyle.SECURE,
-                availableCapital = 10_000
+                investmentStyle = SECURE,
+                availableCapital = 10_000L
         )
 
         // then
@@ -111,4 +113,89 @@ class InvestmentPortfolioServiceTest {
         assertThat(this.portfolioShare.compareTo(expectedPortfolioShare)).isEqualTo(0)
     }
 
+    @Test(expected = IllegalArgumentException::class)
+    fun `should throw exception when no mutual fund selected`() {
+        // when
+        investmentPortfolioService.createPortfolio(
+                selectedMutualFunds = listOf(),
+                investmentStyle = BALANCED,
+                availableCapital = thousand
+        )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `should throw exception when no mutual fund selected with type required by investment style`() {
+        // when
+        investmentPortfolioService.createPortfolio(
+                selectedMutualFunds = listOf(polishMutualFund1, moneyMutualFund1),
+                investmentStyle = BALANCED,
+                availableCapital = thousand
+        )
+    }
+
+    @Test
+    fun `should create portfolio according to secure investment style`() {
+        // when
+        val portfolio = investmentPortfolioService.createPortfolio(
+                selectedMutualFunds = listOf(polishMutualFund1, foreignMutualFund1, moneyMutualFund1),
+                investmentStyle = SECURE,
+                availableCapital = thousand
+        )
+
+        // then
+        assertThat(portfolio.remainingCapital).isEqualTo(0)
+        assertThat(portfolio.items).containsExactly(
+                InvestmentPortfolio.Item(polishMutualFund1, 200, 20.0),
+                InvestmentPortfolio.Item(foreignMutualFund1, 750, 75.0),
+                InvestmentPortfolio.Item(moneyMutualFund1, 50, 5.0)
+        )
+    }
+
+    @Test
+    fun `should create portfolio according to balanced investment style`() {
+        // when
+        val portfolio = investmentPortfolioService.createPortfolio(
+                selectedMutualFunds = listOf(polishMutualFund1, foreignMutualFund1, moneyMutualFund1),
+                investmentStyle = BALANCED,
+                availableCapital = thousand
+        )
+
+        // then
+        assertThat(portfolio.remainingCapital).isEqualTo(0)
+        assertThat(portfolio.items).containsExactly(
+                InvestmentPortfolio.Item(polishMutualFund1, 300, 30.0),
+                InvestmentPortfolio.Item(foreignMutualFund1, 600, 60.0),
+                InvestmentPortfolio.Item(moneyMutualFund1, 100, 10.0)
+        )
+    }
+
+    @Test
+    fun `should create portfolio according to aggressive investment style`() {
+        // when
+        val portfolio = investmentPortfolioService.createPortfolio(
+                selectedMutualFunds = listOf(polishMutualFund1, foreignMutualFund1, moneyMutualFund1),
+                investmentStyle = AGGRESSIVE,
+                availableCapital = thousand
+        )
+
+        // then
+        assertThat(portfolio.remainingCapital).isEqualTo(0)
+        assertThat(portfolio.items).containsExactly(
+                InvestmentPortfolio.Item(polishMutualFund1, 400, 40.0),
+                InvestmentPortfolio.Item(foreignMutualFund1, 200, 20.0),
+                InvestmentPortfolio.Item(moneyMutualFund1, 400, 40.0)
+        )
+    }
+
+    companion object {
+        const val thousand = 1000L
+
+        val polishMutualFund1 = MutualFund(1L, "Polish Fund 1", POLISH)
+        val polishMutualFund2 = MutualFund(2L, "Polish Fund 2", POLISH)
+        val polishMutualFund3 = MutualFund(3L, "Polish Fund 3", POLISH)
+        val foreignMutualFund1 = MutualFund(4L, "Foreign Fund 1", FOREIGN)
+        val foreignMutualFund2 = MutualFund(5L, "Foreign Fund 2", FOREIGN)
+        val foreignMutualFund3 = MutualFund(6L, "Foreign Fund 3", FOREIGN)
+        val moneyMutualFund1 = MutualFund(7L, "Money Fund 1", MONEY)
+    }
 }

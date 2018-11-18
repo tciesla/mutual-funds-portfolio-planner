@@ -14,6 +14,8 @@ class InvestmentPortfolioService {
             availableCapital: Long
     ) : InvestmentPortfolio {
 
+        validateSelectedMutualFunds(selectedMutualFunds, investmentStyle)
+
         val investedCapitalPerMutualFundType: Map<MutualFund.Type, Long> = splitAvailableCapitalPerMutualFundType(
                 selectedMutualFunds, availableCapital, investmentStyle)
 
@@ -28,6 +30,16 @@ class InvestmentPortfolioService {
                 .also { println("portfolioItems:\n${it.joinToString("\n")}") }
 
         return InvestmentPortfolio(remainingCapital, portfolioItems)
+    }
+
+    private fun validateSelectedMutualFunds(selectedMutualFunds: List<MutualFund>, investmentStyle: InvestmentStyle) {
+        if (selectedMutualFunds.isEmpty()) {
+            throw IllegalArgumentException("at least one mutual fund must be selected")
+        }
+
+        if (!selectedMutualFunds.map { it.type }.containsAll(investmentStyle.mutualFundMixture.keys)) {
+            throw IllegalArgumentException("at least one mutual fund with type required by investment style must be selected")
+        }
     }
 
     private fun splitAvailableCapitalPerMutualFundType(
