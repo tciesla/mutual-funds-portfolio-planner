@@ -1,31 +1,34 @@
 package com.github.tciesla.mutualfundsportfolioplanner.domain
 
-import com.github.tciesla.mutualfundsportfolioplanner.domain.MutualFund.Type.POLISH
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 class MutualFundTest {
 
     @Test
-    fun `should create example mutual fund`() {
+    fun `should create mutual fund`() {
         // when
-        val mutualFund = MutualFund(ID, NAME, type = POLISH)
+        val mutualFund = MutualFund(expectedId, expectedName, expectedType)
 
         // then
-        assertThat(mutualFund.id).isEqualTo(ID)
-        assertThat(mutualFund.name).isEqualTo(NAME)
-        assertThat(mutualFund.type).isEqualTo(POLISH)
+        assertThat(mutualFund.id).isEqualTo(expectedId)
+        assertThat(mutualFund.name).isEqualTo(expectedName)
+        assertThat(mutualFund.type).isEqualTo(expectedType)
     }
 
     @Test
     fun `three different mutual fund types should be available`() {
+        // when
+        val mutualFundTypes = MutualFund.Type.values()
+
         // then
-        assertThat(MutualFund.Type.values()).hasSize(3)
+        assertThat(mutualFundTypes).hasSize(3)
     }
 
     companion object {
-        const val ID = 25L
-        const val NAME = "Polish Fund"
+        const val expectedId = 25L
+        const val expectedName = "Polish Fund $expectedId"
+        val expectedType = MutualFund.Type.POLISH
     }
 
 }

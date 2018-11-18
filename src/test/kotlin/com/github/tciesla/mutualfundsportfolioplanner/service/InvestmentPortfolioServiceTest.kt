@@ -63,7 +63,6 @@ class InvestmentPortfolioServiceTest {
         )
 
         // then
-        println(portfolio.remainingCapital)
         assertThat(portfolio.remainingCapital).isEqualTo(1L)
 
         portfolio.items[0].match(1000.00, 10.00)

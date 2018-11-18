@@ -3,11 +3,9 @@ package com.github.tciesla.mutualfundsportfolioplanner.service
 import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentPortfolio
 import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentStyle
 import com.github.tciesla.mutualfundsportfolioplanner.domain.MutualFund
-import org.springframework.stereotype.Service
 import java.math.RoundingMode
 import kotlin.math.max
 
-@Service
 class InvestmentPortfolioService {
 
     fun createPortfolio(
@@ -16,7 +14,7 @@ class InvestmentPortfolioService {
             availableCapital: Long
     ) : InvestmentPortfolio {
 
-        val investedCapitalPerMutualFundType: Map<MutualFund.Type, Long> = splitAvailableCapitalByMutualFundType(
+        val investedCapitalPerMutualFundType: Map<MutualFund.Type, Long> = splitAvailableCapitalPerMutualFundType(
                 selectedMutualFunds, availableCapital, investmentStyle)
 
         val investedCapital: Long = investedCapitalPerMutualFundType.values.sum()
@@ -27,12 +25,12 @@ class InvestmentPortfolioService {
 
         val portfolioItems: List<InvestmentPortfolio.Item> = createPortfolioItems(
                 selectedMutualFunds, investedCapital, investedCapitalPerMutualFundType)
-                .also { println("portfolioItems: $it") }
+                .also { println("portfolioItems:\n${it.joinToString("\n")}") }
 
         return InvestmentPortfolio(remainingCapital, portfolioItems)
     }
 
-    private fun splitAvailableCapitalByMutualFundType(
+    private fun splitAvailableCapitalPerMutualFundType(
             mutualFunds: List<MutualFund>,
             availableCapital: Long,
             investmentStyle: InvestmentStyle
