@@ -1,34 +1,23 @@
 package com.github.tciesla.mutualfundsportfolioplanner.domain
 
-import java.math.BigDecimal
+enum class InvestmentStyle(val mutualFundMixture: Map<MutualFund.Type, Int>) {
 
-class InvestmentStyle(val name: String, mutualFundMixture: Map<MutualFund.Type, BigDecimal>) {
+    SECURE(mapOf(
+            MutualFund.Type.POLISH to 20,
+            MutualFund.Type.FOREIGN to 75,
+            MutualFund.Type.MONEY to 5
+    )),
 
-    val mutualFundMixture = validatedMutualFundMixture(mutualFundMixture)
+    BALANCED(mapOf(
+            MutualFund.Type.POLISH to 30,
+            MutualFund.Type.FOREIGN to 60,
+            MutualFund.Type.MONEY to 10
+    )),
 
-    companion object {
-        val HUNDRED = 100.toBigDecimal()
-    }
-
-    private fun validatedMutualFundMixture(mutualFundMixture: Map<MutualFund.Type, BigDecimal>)
-            : Map<MutualFund.Type, BigDecimal> {
-
-        if (mutualFundMixture.isEmpty()) {
-            throw IllegalArgumentException("mutual fund mixture is empty")
-        }
-
-        val overallPercentages = mutualFundMixture.values
-                .reduce { acc, number -> acc.plus(number) }
-
-        if (overallPercentages < HUNDRED || overallPercentages > HUNDRED) {
-            throw IllegalArgumentException("mutual fund mixture must sum up to 100%")
-        }
-
-        if (mutualFundMixture.values.any { it <= BigDecimal.ZERO  }) {
-            throw IllegalArgumentException("mutual fund mixture could have values only above 0.00%")
-        }
-
-        return mutualFundMixture
-    }
+    AGGRESSIVE(mapOf(
+            MutualFund.Type.POLISH to 40,
+            MutualFund.Type.FOREIGN to 20,
+            MutualFund.Type.MONEY to 40
+    ));
 
 }

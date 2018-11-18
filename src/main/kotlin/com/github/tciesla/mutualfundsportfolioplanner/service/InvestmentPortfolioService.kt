@@ -3,23 +3,18 @@ package com.github.tciesla.mutualfundsportfolioplanner.service
 import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentPortfolio
 import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentStyle
 import com.github.tciesla.mutualfundsportfolioplanner.domain.MutualFund
-import com.github.tciesla.mutualfundsportfolioplanner.repository.InvestmentStyleRepository
 import org.springframework.stereotype.Service
-import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.max
 
 @Service
-class InvestmentPortfolioService(val investmentStyleRepository: InvestmentStyleRepository) {
+class InvestmentPortfolioService {
 
     fun createPortfolio(
             selectedMutualFunds: List<MutualFund>,
-            investmentStyleName: String,
+            investmentStyle: InvestmentStyle,
             availableCapital: Long
     ) : InvestmentPortfolio {
-
-        val investmentStyle = investmentStyleRepository.findByName(investmentStyleName)
-            ?: throw IllegalArgumentException("investment style with name $investmentStyleName not found")
 
         val investedCapitalPerMutualFundType: Map<MutualFund.Type, Long> = splitAvailableCapitalByMutualFundType(
                 selectedMutualFunds, availableCapital, investmentStyle)
@@ -45,7 +40,7 @@ class InvestmentPortfolioService(val investmentStyleRepository: InvestmentStyleR
 
         var latestMatchedMutualFundTypeBuckets: Map<MutualFund.Type, Long> = mutualFunds.map { it.type to 0L }.toMap()
 
-        val targetMutualFundTypeBucketsShares: Map<MutualFund.Type, BigDecimal> = investmentStyle.mutualFundMixture
+        val targetMutualFundTypeBucketsShares: Map<MutualFund.Type, Int> = investmentStyle.mutualFundMixture
 
         val mutualFundTypeBuckets: MutableMap<MutualFund.Type, Long> = latestMatchedMutualFundTypeBuckets.toMutableMap()
 
@@ -57,7 +52,7 @@ class InvestmentPortfolioService(val investmentStyleRepository: InvestmentStyleR
                     .map { it.type to (mutualFundTypeBuckets[it.type]!!.toDouble() / spentCapital) * 100.0 }
                     .toMap()
 
-            if (bucketsSharesInPortfolio.all { it.value.toBigDecimal().compareTo(targetMutualFundTypeBucketsShares[it.key]) == 0 }) {
+            if (bucketsSharesInPortfolio.all { it.value.toBigDecimal().compareTo(targetMutualFundTypeBucketsShares[it.key]!!.toBigDecimal()) == 0 }) {
                 latestMatchedMutualFundTypeBuckets = mutualFundTypeBuckets.also { println("matched: $it") }.toMap()
             }
 

@@ -1,24 +1,17 @@
 package com.github.tciesla.mutualfundsportfolioplanner.service
 
 import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentPortfolio
+import com.github.tciesla.mutualfundsportfolioplanner.domain.InvestmentStyle
 import com.github.tciesla.mutualfundsportfolioplanner.domain.MutualFund
 import com.github.tciesla.mutualfundsportfolioplanner.domain.MutualFund.Type.FOREIGN
 import com.github.tciesla.mutualfundsportfolioplanner.domain.MutualFund.Type.MONEY
 import com.github.tciesla.mutualfundsportfolioplanner.domain.MutualFund.Type.POLISH
-import com.github.tciesla.mutualfundsportfolioplanner.repository.InvestmentStyleRepository.Predefined.SECURE
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit4.SpringRunner
 
-@SpringBootTest
-@RunWith(SpringRunner::class)
 class InvestmentPortfolioServiceTest {
 
-    @Autowired
-    private lateinit var investmentPortfolioService: InvestmentPortfolioService
+    private val investmentPortfolioService = InvestmentPortfolioService()
 
     @Test
     fun `should pass task example #0`() {
@@ -35,7 +28,7 @@ class InvestmentPortfolioServiceTest {
         // when
         val portfolio = investmentPortfolioService.createPortfolio(
                 selectedMutualFunds = selectedMutualFunds,
-                investmentStyleName = SECURE.name,
+                investmentStyle = InvestmentStyle.SECURE,
                 availableCapital = 10_000
         )
 
@@ -65,7 +58,7 @@ class InvestmentPortfolioServiceTest {
         // when
         val portfolio = investmentPortfolioService.createPortfolio(
                 selectedMutualFunds = selectedMutualFunds,
-                investmentStyleName = SECURE.name,
+                investmentStyle = InvestmentStyle.SECURE,
                 availableCapital = 10_001
         )
 
@@ -96,7 +89,7 @@ class InvestmentPortfolioServiceTest {
         // when
         val portfolio = investmentPortfolioService.createPortfolio(
                 selectedMutualFunds = selectedMutualFunds,
-                investmentStyleName = SECURE.name,
+                investmentStyle = InvestmentStyle.SECURE,
                 availableCapital = 10_000
         )
 
